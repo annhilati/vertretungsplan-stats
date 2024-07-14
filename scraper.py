@@ -2,6 +2,7 @@ import os
 import schedule
 import time
 import requests
+import base64
 import xml.etree.ElementTree as XML
 from datetime import datetime, date, timedelta
 from dotenv import load_dotenv
@@ -51,17 +52,43 @@ if os.path.exists("./data/latest.xml"):
 # │                                     Unterprogramme                                       │ 
 # ╰──────────────────────────────────────────────────────────────────────────────────────────╯
 
-def postToWebhook(msg: str):
-    payload = {"content": msg}
+# def postToWebhook(msg: str):
+#     payload = {"content": msg}
 
-    response = requests.post(WEBHOOK_URL, json=payload)
-    try:
-        response.raise_for_status()
-        #print(f"Nachricht erfolgreich gesendet: {response.status_code}")
-        ...
-    except requests.exceptions.HTTPError as err:
-        #print(f"Fehler beim Senden der Nachricht: {err}")
-        ...
+#     response = requests.post(WEBHOOK_URL, json=payload)
+#     try:
+#         response.raise_for_status()
+#         #print(f"Nachricht erfolgreich gesendet: {response.status_code}")
+#         ...
+#     except requests.exceptions.HTTPError as err:
+#         #print(f"Fehler beim Senden der Nachricht: {err}")
+#         ...
+
+def uploadToGitHub(dateipfad):
+    url = f'https://api.github.com/repos/annhilati/vertretungsplan-stats/contents/data/{dateiname}'
+
+    dateiname = os.path.basename(dateipfad)
+
+    with open(dateipfad, 'rb') as datei:
+        inhalt = datei.read()
+    base64_content = base64.b64encode(inhalt).decode('utf-8')
+
+    headers = {
+        'Authorization': f'token {GITHUB_TOKEN}',
+        'Content-Type': 'application/json'
+    }
+    data = {
+        'message': "Vertretungsplan Scraper Upload",
+        'content': base64_content
+    }
+    
+    response = requests.put(url, json=data, headers=headers)
+    
+    if response.status_code == 201:
+        log(f"Datei {dateiname} erfolgreich hochgeladen")
+    else:
+        log(f'\033[31m[ERROR] Datei {dateiname} konnte nicht hochgeladen werden: {response.status_code}')
+        print(response.json())
 
 def scrape(date = date.today() - timedelta(days=1)):
     loghead(f"Scrape-Versuch für den {datum(date)} begonnen")
@@ -76,6 +103,8 @@ def scrape(date = date.today() - timedelta(days=1)):
             tag.saveasfile(pfad=f"./data/latest.xml", allowoverwrite=True)
 
             log(f"\033[32m[SUCCES] Dateien wurden in data/ angelegt\033[0m")
+
+            uploadToGitHub(dateipfad)
 
         except FileExistsError:
             log(f"\033[31m[ERROR] Datei mit Pfad \"{dateipfad}\" existiert bereits \033[0m")
