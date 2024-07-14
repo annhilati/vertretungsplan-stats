@@ -6,7 +6,7 @@ from datetime import datetime, date, timedelta
 from dotenv import load_dotenv
 from vpmobil import Vertretungsplan, VpMobil
 
-from .lib import *
+from lib.lib import loghead, wochentag, uhrzeit
 
 load_dotenv()
 
@@ -44,8 +44,12 @@ def scrape(datum = date.today() - timedelta(days=1)):
     except VpMobil.FetchingError:
         ...
 
+# ╭──────────────────────────────────────────────────────────────────────────────────────────╮
+# │                                     Hauptprogramm                                        │ 
+# ╰──────────────────────────────────────────────────────────────────────────────────────────╯
+
 # ZEITEN SIND -2H
-schedule.every().day.at("06:00").do(scrape)
+schedule.every().day.at(uhrzeit(datetime.now().replace(hour=8, minute=0))).do(scrape)
 
 scrape(date(2024, 6, 19)) # Debug
 
