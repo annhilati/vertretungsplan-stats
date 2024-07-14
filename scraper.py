@@ -2,9 +2,10 @@ import os
 import schedule
 import time
 import requests
+import xml.etree.ElementTree as XML
 from datetime import datetime, date, timedelta
 from dotenv import load_dotenv
-from vpmobil import Vertretungsplan, VpMobil
+from vpmobil import Vertretungsplan, VpMobil, VpDay
 
 load_dotenv()
 
@@ -43,6 +44,8 @@ WEBHOOK_URL = os.getenv("DC_WEBHOOK_URL")
 GITHUB_TOKEN = os.getenv("GH_TOKEN")
 
 vp = Vertretungsplan(SCHULNUMMER, BENUTZERNAME, PASSWORT)
+if os.path.exists("./data/latest.xml"):
+    freieTage = VpDay(xmldata=XML.parse("./data/latest.xml"), datum=date).freieTage()
 
 # ╭──────────────────────────────────────────────────────────────────────────────────────────╮
 # │                                     Unterprogramme                                       │ 
@@ -79,10 +82,15 @@ def scrape(date = date.today() - timedelta(days=1)):
 
     except VpMobil.FetchingError:
         if wochentag[date.weekday()] not in ["Sa", "So"]:
-            log(f"\033[31m[ERROR] Daten vom {datum(date)} konnten nicht abgerufen werden \033[0m")
-            ...
+            global freieTage
+            if date not in freieTage:
+                log(f"\033[31m[ERROR] Daten vom {datum(date)} konnten nicht abgerufen werden \033[0m")
+            elif date in freieTage:
+                log(f"[INFO] Daten vom {datum(date)} wurden nicht abgerufen (als frei markierter Tag)")
         elif wochentag[date.weekday()] in ["Sa", "So"]:
             log(f"[INFO] Daten vom {datum(date)} wurden nicht abgerufen (Wochenende)")
+
+    freieTage = VpDay(xmldata=XML.parse("./data/latest.xml"), datum=date).freieTage()
 
 # ╭──────────────────────────────────────────────────────────────────────────────────────────╮
 # │                                     Hauptprogramm                                        │ 
@@ -91,7 +99,7 @@ def scrape(date = date.today() - timedelta(days=1)):
 # ZEITEN SIND -2H
 schedule.every().day.at(uhrzeit(datetime.now().replace(hour=8, minute=0))).do(scrape)
 
-scrape(date(2024, 6, 19)) # Debug
+scrape(date(2024, 7, 19)) # Debug
 
 while True:
     schedule.run_pending()
