@@ -86,7 +86,7 @@ def uploadToGitHub(dateipfad):
         'Content-Type': 'application/json'
     }
     data = {
-        'message': "Vertretungsplan Scraper Upload",
+        'message': "Vertretungsplan-Scraper-Upload",
         'content': base64_content
     }
     
@@ -133,7 +133,8 @@ def scrape(date = date.today() - timedelta(days=1)):
             log(f"[INFO] Daten vom {datum(date)} wurden nicht abgerufen (Wochenende)")
 
     freieTage = VpDay(xmldata=XML.parse("./data/latest.xml"), datum=date).freieTage()
-    log("")
+    log(f"")
+    log(f"[INFO] Scraping abgeschlossen. Warten auf nächsten Scrape-Versuch ...")
 
 # ╭──────────────────────────────────────────────────────────────────────────────────────────╮
 # │                                     Hauptprogramm                                        │ 
@@ -142,7 +143,7 @@ def scrape(date = date.today() - timedelta(days=1)):
 print(f"╔════════════════════════════════════════════════════════════════════╗")
 print(f"║ Vertretungsplan-Scraper by Annhilati & Joshi                       ║")
 print(f"╚═╦══════════════════════════════════════════════════════════════════╝")
-print(f"  ║ [INFO] Warten auf nächsten Scrape-Versuch")
+print(f"  ║ [INFO] Warten auf nächsten Scrape-Versuch ...")
 
 # Planungszeiten
 schedule.every().day.at(uhrzeit(datetime.now().replace(hour=8, minute=0))).do(scrape, date = date.today() - timedelta(days=1))
