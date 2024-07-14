@@ -61,18 +61,28 @@ def postToWebhook(msg: str):
         ...
 
 def scrape(date = date.today() - timedelta(days=1)):
-    loghead(f"[INFO] Scrape-Versuch für den {datum(date)} begonnen")
+    loghead(f"Scrape-Versuch für den {datum(date)} begonnen")
     try:
         tag = vp.fetch(date)
-        log(f"\033[32m[SUCCES] Daten vom {date} erfolgreich abgerufen\033[0m")
+        log(f"\033[32m[SUCCES] Daten vom {datum(date)} erfolgreich abgerufen\033[0m")
+
         try:
-            dateipfad = f"./data/{tag.datum.strftime("%d.%m.%Y")} ({wochentag[tag.datum.weekday()]})"
+            dateipfad = f"./data/{tag.datum.strftime("%d.%m.%Y")} ({wochentag[tag.datum.weekday()]}).xml"
             tag.saveasfile(pfad=dateipfad, allowoverwrite=False)
-        except FileExistsError as e:
-            log(f"\033[31m[ERROR] Datei mit Pfad {dateipfad} existiert bereits \033[0m")
+ 
+            tag.saveasfile(pfad=f"./data/latest.xml", allowoverwrite=True)
+
+            log(f"\033[32m[SUCCES] Dateien wurden in data/ angelegt\033[0m")
+
+        except FileExistsError:
+            log(f"\033[31m[ERROR] Datei mit Pfad \"{dateipfad}\" existiert bereits \033[0m")
 
     except VpMobil.FetchingError:
-        log(f"\033[31m[ERROR] Datei mit Pfad {dateipfad} existiert bereits \033[0m")
+        if wochentag[date.weekday()] not in ["Sa", "So"]:
+            log(f"\033[31m[ERROR] Daten vom {datum(date)} konnten nicht abgerufen werden \033[0m")
+            ...
+        elif wochentag[date.weekday()] in ["Sa", "So"]:
+            log(f"[INFO] Daten vom {datum(date)} wurden nicht abgerufen (Wochenende)")
 
 # ╭──────────────────────────────────────────────────────────────────────────────────────────╮
 # │                                     Hauptprogramm                                        │ 
