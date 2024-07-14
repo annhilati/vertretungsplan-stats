@@ -6,9 +6,32 @@ from datetime import datetime, date, timedelta
 from dotenv import load_dotenv
 from vpmobil import Vertretungsplan, VpMobil
 
-from lib.lib import loghead, wochentag, uhrzeit
-
 load_dotenv()
+
+# ╭──────────────────────────────────────────────────────────────────────────────────────────╮
+# │                                      Bibliothek                                          │ 
+# ╰──────────────────────────────────────────────────────────────────────────────────────────╯
+
+zeitdiff = int(os.getenv("TIME_DIFF"))
+
+wochentag = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
+
+def uhrzeit(datetime: datetime = datetime.now()) -> str:
+    return (datetime - timedelta(hours=zeitdiff)).strftime("%H:%M")
+
+def loghead(msg: str):
+    print(f"╔════════════════════════════════════════════════════════════════════")
+    print(f"║ {msg}")
+    print(f"╚═╦══════════════════════════════════════════════════════════════════")
+    print(f"  ║ Aktuelle Uhrzeit: {uhrzeit()}")
+    print(f"  ║ ")
+
+def log(msg: str):
+    print("  ║ " + msg)
+
+# ╭──────────────────────────────────────────────────────────────────────────────────────────╮
+# │                                    Initialisierung                                       │ 
+# ╰──────────────────────────────────────────────────────────────────────────────────────────╯
 
 SCHULNUMMER = int(os.getenv('VP_SCHULNUMMER'))
 BENUTZERNAME = os.getenv('VP_BENUTZERNAME')
@@ -17,6 +40,10 @@ WEBHOOK_URL = os.getenv("DC_WEBHOOK_URL")
 GITHUB_TOKEN = os.getenv("GH_TOKEN")
 
 vp = Vertretungsplan(SCHULNUMMER, BENUTZERNAME, PASSWORT)
+
+# ╭──────────────────────────────────────────────────────────────────────────────────────────╮
+# │                                     Unterprogramme                                       │ 
+# ╰──────────────────────────────────────────────────────────────────────────────────────────╯
 
 def postToWebhook(msg: str):
     payload = {"content": msg}
