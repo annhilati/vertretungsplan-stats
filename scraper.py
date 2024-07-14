@@ -133,8 +133,8 @@ def scrape(date = date.today() - timedelta(days=1)):
             log(f"[INFO] Daten vom {datum(date)} wurden nicht abgerufen (Wochenende)")
 
     freieTage = VpDay(xmldata=XML.parse("./data/latest.xml"), datum=date).freieTage()
-    log(f"")
     log(f"[INFO] Scraping abgeschlossen. Warten auf nächsten Scrape-Versuch ...")
+    log(f"")
 
 # ╭──────────────────────────────────────────────────────────────────────────────────────────╮
 # │                                     Hauptprogramm                                        │ 
