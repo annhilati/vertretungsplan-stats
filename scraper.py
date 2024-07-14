@@ -24,7 +24,7 @@ def datum(datetime: datetime = datetime.now()) -> str:
     return (datetime - timedelta(hours=zeitdiff)).strftime("%d.%m.%Y")
 
 def loghead(msg: str):
-    print(f"╔════════════════════════════════════════════════════════════════════")
+    print(f"╔═╩══════════════════════════════════════════════════════════════════")
     print(f"║ {msg}")
     print(f"╚═╦══════════════════════════════════════════════════════════════════")
     print(f"  ║ Aktuelle Uhrzeit: {uhrzeit()} am {datum()}")
@@ -83,23 +83,32 @@ def scrape(date = date.today() - timedelta(days=1)):
     except VpMobil.FetchingError:
         if wochentag[date.weekday()] not in ["Sa", "So"]:
             global freieTage
+            
             if date not in freieTage:
                 log(f"\033[31m[ERROR] Daten vom {datum(date)} konnten nicht abgerufen werden \033[0m")
+            
             elif date in freieTage:
                 log(f"[INFO] Daten vom {datum(date)} wurden nicht abgerufen (als frei markierter Tag)")
+        
         elif wochentag[date.weekday()] in ["Sa", "So"]:
             log(f"[INFO] Daten vom {datum(date)} wurden nicht abgerufen (Wochenende)")
 
     freieTage = VpDay(xmldata=XML.parse("./data/latest.xml"), datum=date).freieTage()
+    log("")
 
 # ╭──────────────────────────────────────────────────────────────────────────────────────────╮
 # │                                     Hauptprogramm                                        │ 
 # ╰──────────────────────────────────────────────────────────────────────────────────────────╯
 
-# ZEITEN SIND -2H
-schedule.every().day.at(uhrzeit(datetime.now().replace(hour=8, minute=0))).do(scrape)
+print(f"╔════════════════════════════════════════════════════════════════════╗")
+print(f"║ Vertretungsplan-Scraper by Annhilati & Joshi                       ║")
+print(f"╚═╦══════════════════════════════════════════════════════════════════╝")
+print(f"  ║ [INFO] Warten auf nächsten Scrape-Versuch")
 
-scrape(date(2024, 7, 19)) # Debug
+# Planungszeiten
+schedule.every().day.at(uhrzeit(datetime.now().replace(hour=8, minute=0))).do(scrape, date = date.today() - timedelta(days=1))
+
+scrape(date(2024, 6, 19)) # Debug-Test
 
 while True:
     schedule.run_pending()
