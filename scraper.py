@@ -24,6 +24,13 @@ def uhrzeit(datetime: datetime = datetime.now()) -> str:
 def datum(datetime: datetime = datetime.now()) -> str:
     return (datetime - timedelta(hours=zeitdiff)).strftime("%d.%m.%Y")
 
+c = {
+    "warn":"\033[38;2;255;165;0m",
+    "error":"\033[31m",
+    "succes":"\033[32m",
+    "reset":"\033[0m"
+    }
+
 def loghead(msg: str):
     print(f"╔═╩══════════════════════════════════════════════════════════════════")
     print(f"║ {msg}")
@@ -65,9 +72,10 @@ if os.path.exists("./data/latest.xml"):
 #         ...
 
 def uploadToGitHub(dateipfad):
-    url = f'https://api.github.com/repos/annhilati/vertretungsplan-stats/contents/data/{dateiname}'
 
     dateiname = os.path.basename(dateipfad)
+    url = f'https://api.github.com/repos/annhilati/vertretungsplan-stats/contents/data/{dateiname}'
+
 
     with open(dateipfad, 'rb') as datei:
         inhalt = datei.read()
@@ -85,9 +93,9 @@ def uploadToGitHub(dateipfad):
     response = requests.put(url, json=data, headers=headers)
     
     if response.status_code == 201:
-        log(f"Datei {dateiname} erfolgreich hochgeladen")
+        log(f"\033[32m[SUCCES] Datei \"{dateiname}\" erfolgreich hochgeladen\033[0m")
     else:
-        log(f'\033[31m[ERROR] Datei {dateiname} konnte nicht hochgeladen werden: {response.status_code}')
+        log(f'\033[31m[ERROR] Datei \"{dateiname}\" konnte nicht hochgeladen werden: {response.status_code}\033[0m')
         print(response.json())
 
 def scrape(date = date.today() - timedelta(days=1)):
@@ -107,7 +115,8 @@ def scrape(date = date.today() - timedelta(days=1)):
             uploadToGitHub(dateipfad)
 
         except FileExistsError:
-            log(f"\033[31m[ERROR] Datei mit Pfad \"{dateipfad}\" existiert bereits \033[0m")
+            log(f"\033[38;2;255;165;0m[CONFLICT] Datei mit Pfad \"{dateipfad}\" existiert bereits \033[0m")
+            log(f"-> Anlegung und Upload neuer Dateien wird übersprungen")
 
     except VpMobil.FetchingError:
         if wochentag[date.weekday()] not in ["Sa", "So"]:
@@ -115,6 +124,7 @@ def scrape(date = date.today() - timedelta(days=1)):
             
             if date not in freieTage:
                 log(f"\033[31m[ERROR] Daten vom {datum(date)} konnten nicht abgerufen werden \033[0m")
+                log(f"-> Versende Benachrichtung an Webhook")
             
             elif date in freieTage:
                 log(f"[INFO] Daten vom {datum(date)} wurden nicht abgerufen (als frei markierter Tag)")
