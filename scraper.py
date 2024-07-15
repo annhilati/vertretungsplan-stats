@@ -101,6 +101,14 @@ def uploadToGitHub(datei, zielpfad):
         
         else:
             log(f"  -> (\033[31m{response.status_code}\033[0m) Versende Benachrichtung an Webhook")
+            postToWebhook(msg=f"""
+# Vertretungsplan-Scraper
+```[WARN] Datei \"{zielpfad}\" konnte nicht hochgeladen werden```
+### excepted response.status_code `{response.status_code}`
+Beim Fehler handelt es sich nicht um einen `422`. Die zum Upload angefragte Datei existierte also noch nicht
+
+<@720992368110862407>
+-# Dieser Fall sollte überprüft werden ・ [Karlo-Hosting](https://karlo-hosting.com/dash/servers)""")
 
 def scrape(date = date.today() - timedelta(days=1)):
     loghead(f"Scrape-Versuch für den {datum(date)} begonnen")
@@ -135,7 +143,17 @@ def scrape(date = date.today() - timedelta(days=1)):
                 log(f"\033[31m[ERROR] Daten vom {datum(date)} konnten nicht abgerufen werden \033[0m")
                 log(f"  -> Eine Platzhalterdatei wird erstellt und hochgeladen")
                 log(f"  -> Versende Benachrichtung an Webhook")
-                postToWebhook(msg="Test")
+                postToWebhook(msg=f"""
+# Vertretungsplan-Scraper
+```[ERROR] Daten vom {datum(date)} konnten nicht abgerufen werden```
+### excepted `VpMobil.FetchingError`
+Der Tag war weder Wochenende noch ein als frei markierter Tag
+
+-> Eine Platzhalterdatei wurde erstellt und hochgeladen
+
+<@720992368110862407>
+-# Dieser Fall sollte überprüft werden ・ [Karlo-Hosting](https://karlo-hosting.com/dash/servers)
+""")
 
                 with open(f"{zieldateipfad}.err", "w") as f: pass
                 uploadToGitHub(datei=f"{zieldateipfad}.err", zielpfad=f"{datenverzeichnis}/{dateiname}.ERROR")
