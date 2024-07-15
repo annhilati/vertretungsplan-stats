@@ -15,7 +15,6 @@ load_dotenv()
 # ╰──────────────────────────────────────────────────────────────────────────────────────────╯
 
 zeitdiff = int(os.getenv("TIME_DIFF"))
-SYSTEM = os.getenv("SYSTEM")
 
 wochentag = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
 
@@ -52,6 +51,7 @@ PASSWORT = os.getenv('VP_PASSWORT')
 WEBHOOK_URL = os.getenv("DC_WEBHOOK_URL")
 GITHUB_TOKEN = os.getenv("GH_TOKEN")
 
+SYSTEM = os.getenv("SYSTEM")
 datenverzeichnis = "data" if SYSTEM == "live" else "test"
 
 vp = Vertretungsplan(SCHULNUMMER, BENUTZERNAME, PASSWORT)
@@ -164,7 +164,7 @@ print(f"╚═╦═════════════════════
 if os.path.exists(f"./{datenverzeichnis}/latest.xml"):
     freieTage = VpDay(xmldata=XML.parse(f"./{datenverzeichnis}/latest.xml"), datum=date).freieTage()
     log(f"[INFO] FreieTage erfolgreich aus \"./{datenverzeichnis}/latest.xml\" ausgelesen")
-    log(f"[INFO] Warten auf nächsten Scrape-Versuch ...")
+log(f"[INFO] Warten auf nächsten Scrape-Versuch ...")
 
 # Planungszeiten
 schedule.every().day.at(uhrzeit(datetime.now().replace(hour=8, minute=0))).do(scrape, date = date.today() - timedelta(days=1))
