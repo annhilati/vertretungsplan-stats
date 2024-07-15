@@ -97,8 +97,9 @@ def uploadToGitHub(datei, zielpfad):
     else:
         log(f'\033[38;2;255;165;0m[WARN] Datei \"{zielpfad}\" konnte nicht hochgeladen werden: {response.status_code}\033[0m')
         if response.status_code == 422:
-            log("   [INFO] Die Datei wurde nicht hochgeladen, da sie bereits mit exakt dem selben Inhalt existiert.")
-        #print(response.json())
+            log(f"   -> (\033[32mOK\033[0m) Die Datei wurde nicht hochgeladen, da sie bereits mit exakt dem selben Inhalt existiert.")
+        else:
+            log(f"   -> (\033[31m{response.status_code}\033[0m) Versende Benachrichtung an Webhook")
 
 def scrape(date = date.today() - timedelta(days=1)):
     loghead(f"Scrape-Versuch für den {datum(date)} begonnen")
@@ -135,8 +136,8 @@ def scrape(date = date.today() - timedelta(days=1)):
                 log(f"  -> Eine Platzhalterdatei wird erstellt und hochgeladen")
                 log(f"  -> Versende Benachrichtung an Webhook")
 
-                with open(f"{zieldateipfad}.ERROR", "w") as f: pass
-                uploadToGitHub(datei=f"{zieldateipfad}.ERROR", zielpfad=f"{datenverzeichnis}/{dateiname}.ERROR")
+                with open(f"{zieldateipfad}.err", "w") as f: pass
+                uploadToGitHub(datei=f"{zieldateipfad}.err", zielpfad=f"{datenverzeichnis}/{dateiname}.ERROR")
             
             elif date in freieTage:
                 log(f"[INFO] Daten vom {datum(date)} wurden nicht abgerufen (als frei markierter Tag)")
@@ -164,9 +165,9 @@ print(f"  ║ [INFO] Warten auf nächsten Scrape-Versuch ...")
 # Planungszeiten
 schedule.every().day.at(uhrzeit(datetime.now().replace(hour=8, minute=0))).do(scrape, date = date.today() - timedelta(days=1))
 
-scrape(date(2024, 6, 19))
-scrape(date(2024, 7, 19))
-scrape(date(2024, 8, 15)) # Debug-Test
+scrape(date(2024, 6, 19)) # Debug-Test pos
+scrape(date(2024, 7, 19)) # Debug-Test frei
+scrape(date(2024, 8, 15)) # Debug-Test Err
 
 while True:
     schedule.run_pending()
