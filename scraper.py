@@ -52,25 +52,23 @@ PASSWORT = os.getenv('VP_PASSWORT')
 WEBHOOK_URL = os.getenv("DC_WEBHOOK_URL")
 GITHUB_TOKEN = os.getenv("GH_TOKEN")
 
+datenverzeichnis = "data" if SYSTEM == "live" else "test"
+
 vp = Vertretungsplan(SCHULNUMMER, BENUTZERNAME, PASSWORT)
-if os.path.exists("./data/latest.xml"):
-    freieTage = VpDay(xmldata=XML.parse("./data/latest.xml"), datum=date).freieTage()
 
 # ╭──────────────────────────────────────────────────────────────────────────────────────────╮
 # │                                     Unterprogramme                                       │ 
 # ╰──────────────────────────────────────────────────────────────────────────────────────────╯
 
-# def postToWebhook(msg: str):
-#     payload = {"content": msg}
-
-#     response = requests.post(WEBHOOK_URL, json=payload)
-#     try:
-#         response.raise_for_status()
-#         #print(f"Nachricht erfolgreich gesendet: {response.status_code}")
-#         ...
-#     except requests.exceptions.HTTPError as err:
-#         #print(f"Fehler beim Senden der Nachricht: {err}")
-#         ...
+def postToWebhook(msg: str):
+    payload = {"content": msg}
+    response = requests.post(WEBHOOK_URL, json=payload)
+    try:
+        response.raise_for_status()
+        log(f"      \033[32m[SUCCES] Nachricht wurde an Webhook versendet\033[0m")
+    except requests.exceptions.HTTPError as err:
+        log(f"      \031[32m[FATAL] Nachricht konnte nicht an Webhook versendet werden: {response.status_code}\033[0m")
+        #log(f"      {err}")
 
 def uploadToGitHub(datei, zielpfad):
 
@@ -94,18 +92,20 @@ def uploadToGitHub(datei, zielpfad):
     
     if response.status_code == 201:
         log(f"\033[32m[SUCCES] Datei \"{zielpfad}\" erfolgreich hochgeladen\033[0m")
+    
     else:
         log(f'\033[38;2;255;165;0m[WARN] Datei \"{zielpfad}\" konnte nicht hochgeladen werden: {response.status_code}\033[0m')
+        
         if response.status_code == 422:
-            log(f"   -> (\033[32mOK\033[0m) Die Datei wurde nicht hochgeladen, da sie bereits mit exakt dem selben Inhalt existiert.")
+            log(f"  -> (\033[32mOK\033[0m) Die Datei wurde nicht hochgeladen, da sie bereits mit exakt dem selben Inhalt existiert.")
+        
         else:
-            log(f"   -> (\033[31m{response.status_code}\033[0m) Versende Benachrichtung an Webhook")
+            log(f"  -> (\033[31m{response.status_code}\033[0m) Versende Benachrichtung an Webhook")
 
 def scrape(date = date.today() - timedelta(days=1)):
     loghead(f"Scrape-Versuch für den {datum(date)} begonnen")
 
     dateiname = f"{date.strftime("%Y-%m-%d")} ({wochentag[date.weekday()]}).xml"
-    datenverzeichnis = "data" if SYSTEM == "live" else "test"
     datendir = f"./{datenverzeichnis}" 
     
     zieldateipfad = f"{datendir}/{dateiname}"
@@ -135,6 +135,7 @@ def scrape(date = date.today() - timedelta(days=1)):
                 log(f"\033[31m[ERROR] Daten vom {datum(date)} konnten nicht abgerufen werden \033[0m")
                 log(f"  -> Eine Platzhalterdatei wird erstellt und hochgeladen")
                 log(f"  -> Versende Benachrichtung an Webhook")
+                postToWebhook(msg="Test")
 
                 with open(f"{zieldateipfad}.err", "w") as f: pass
                 uploadToGitHub(datei=f"{zieldateipfad}.err", zielpfad=f"{datenverzeichnis}/{dateiname}.ERROR")
@@ -160,7 +161,10 @@ def scrape(date = date.today() - timedelta(days=1)):
 print(f"╔════════════════════════════════════════════════════════════════════╗")
 print(f"║ Vertretungsplan-Scraper by Annhilati & Joshi                       ║")
 print(f"╚═╦══════════════════════════════════════════════════════════════════╝")
-print(f"  ║ [INFO] Warten auf nächsten Scrape-Versuch ...")
+if os.path.exists(f"./{datenverzeichnis}/latest.xml"):
+    freieTage = VpDay(xmldata=XML.parse(f"./{datenverzeichnis}/latest.xml"), datum=date).freieTage()
+    log(f"[INFO] FreieTage erfolgreich aus \"./{datenverzeichnis}/latest.xml\" ausgelesen")
+    log(f"[INFO] Warten auf nächsten Scrape-Versuch ...")
 
 # Planungszeiten
 schedule.every().day.at(uhrzeit(datetime.now().replace(hour=8, minute=0))).do(scrape, date = date.today() - timedelta(days=1))
