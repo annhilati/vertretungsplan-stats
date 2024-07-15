@@ -104,8 +104,10 @@ def scrape(date = date.today() - timedelta(days=1)):
     loghead(f"Scrape-Versuch für den {datum(date)} begonnen")
 
     dateiname = f"{date.strftime("%Y-%m-%d")} ({wochentag[date.weekday()]}).xml"
-    datenverzeichnis = f"./data" if SYSTEM == "live" else "./test"
-    zieldateipfad = f"{datenverzeichnis}/{dateiname}"
+    datenverzeichnisd = "data" if SYSTEM == "live" else "test"
+    datenverzeichnispfad = f"./{datenverzeichnisd}" 
+    
+    zieldateipfad = f"{datenverzeichnispfad}/{dateiname}"
 
     try:
         tag = vp.fetch(date)
@@ -114,11 +116,11 @@ def scrape(date = date.today() - timedelta(days=1)):
         try:
             tag.saveasfile(pfad=zieldateipfad, allowoverwrite=False)
  
-            tag.saveasfile(pfad=f"{datenverzeichnis}/latest.xml", allowoverwrite=True)
+            tag.saveasfile(pfad=f"{datenverzeichnispfad}/latest.xml", allowoverwrite=True)
 
-            log(f"\033[32m[SUCCES] Dateien wurden in {datenverzeichnis}/ angelegt\033[0m")
+            log(f"\033[32m[SUCCES] Dateien wurden in {datenverzeichnisd}/ angelegt\033[0m")
 
-            uploadToGitHub(datei=zieldateipfad, zielpfad=zieldateipfad)
+            uploadToGitHub(datei=zieldateipfad, zielpfad=f"{datenverzeichnispfad}/{dateiname}")
 
         except FileExistsError:
             log(f"\033[38;2;255;165;0m[CONFLICT] Datei mit Pfad \"{zieldateipfad}\" existiert bereits \033[0m")
@@ -134,19 +136,19 @@ def scrape(date = date.today() - timedelta(days=1)):
                 log(f"  -> Versende Benachrichtung an Webhook")
 
                 with open(f"{zieldateipfad}.ERROR", "w") as f: pass
-                uploadToGitHub(f"{zieldateipfad}.ERROR")
+                uploadToGitHub(datei=f"{zieldateipfad}.ERROR", zielpfad=f"{datenverzeichnispfad}/{dateiname}.ERROR")
             
             elif date in freieTage:
                 log(f"[INFO] Daten vom {datum(date)} wurden nicht abgerufen (als frei markierter Tag)")
                 log(f"  -> Eine Platzhalterdatei wird erstellt und hochgeladen")
 
                 with open(f"{zieldateipfad}.frei", "w") as f: pass
-                uploadToGitHub(f"{zieldateipfad}.frei")
+                uploadToGitHub(datei=f"{zieldateipfad}.frei", zielpfad=f"{datenverzeichnispfad}/{dateiname}.frei")
         
         elif wochentag[date.weekday()] in ["Sa", "So"]:
             log(f"[INFO] Daten vom {datum(date)} wurden nicht abgerufen (Wochenende)")
 
-    freieTage = VpDay(xmldata=XML.parse("./data/latest.xml"), datum=date).freieTage()
+    freieTage = VpDay(xmldata=XML.parse(f"{datenverzeichnispfad}/latest.xml"), datum=date).freieTage()
     log(f"[INFO] Scraping abgeschlossen. Warten auf nächsten Scrape-Versuch ...")
     log(f"")
 
