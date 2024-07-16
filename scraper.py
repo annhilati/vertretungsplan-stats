@@ -123,9 +123,9 @@ def scrape(date = date.today() - timedelta(days=1)):
         log(f"\033[32m[SUCCES] Daten vom {datum(date)} erfolgreich abgerufen\033[0m")
 
         try:
-            tag.saveasfile(pfad=zieldateipfad, allowoverwrite=False)
+            tag.saveasfile(pfad=zieldateipfad, overwrite=False)
  
-            tag.saveasfile(pfad=f"{datendir}/latest.xml", allowoverwrite=True)
+            tag.saveasfile(pfad=f"{datendir}/latest.xml", overwrite=True)
 
             log(f"\033[32m[SUCCES] Dateien wurden in {datenverzeichnis}/ angelegt\033[0m")
 
