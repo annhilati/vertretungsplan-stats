@@ -168,7 +168,7 @@ Der Tag war weder Wochenende noch ein als frei markierter Tag
         elif wochentag[date.weekday()] in ["Sa", "So"]:
             log(f"[INFO] Daten vom {datum(date)} wurden nicht abgerufen (Wochenende)")
 
-    freieTage = VpDay(xmldata=XML.parse(f"{datendir}/latest.xml"), datum=date).freieTage()
+    freieTage = VpDay(xmldata=XML.parse(f"{datendir}/latest.xml")).freieTage()
     log(f"[INFO] Scraping abgeschlossen. Warten auf nächsten Scrape-Versuch ...")
     log(f"")
 
@@ -180,7 +180,7 @@ print(f"╔═══════════════════════
 print(f"║ Vertretungsplan-Scraper by Annhilati & Joshi                       ║")
 print(f"╚═╦══════════════════════════════════════════════════════════════════╝")
 if os.path.exists(f"./{datenverzeichnis}/latest.xml"):
-    freieTage = VpDay(xmldata=XML.parse(f"./{datenverzeichnis}/latest.xml"), datum=date).freieTage()
+    freieTage = VpDay(xmldata=XML.parse(f"./{datenverzeichnis}/latest.xml")).freieTage()
     log(f"[INFO] FreieTage erfolgreich aus \"./{datenverzeichnis}/latest.xml\" ausgelesen")
 log(f"[INFO] Warten auf nächsten Scrape-Versuch ...")
 
