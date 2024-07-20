@@ -4,6 +4,7 @@ import time
 import requests
 import base64
 import xml.etree.ElementTree as XML
+from acemeta import Discord, GitHub
 from datetime import datetime, date, timedelta
 from dotenv import load_dotenv
 from vpmobil import Vertretungsplan, VpMobil, VpDay
@@ -61,50 +62,32 @@ vp = Vertretungsplan(SCHULNUMMER, BENUTZERNAME, PASSWORT)
 # ╰──────────────────────────────────────────────────────────────────────────────────────────╯
 
 def postToWebhook(msg: str):
-    payload = {"content": msg}
-    response = requests.post(WEBHOOK_URL, json=payload)
+
+    webhook = Discord.Webhook(WEBHOOK_URL)
+
     try:
-        response.raise_for_status()
+        webhook.send(msg)
         log(f"      \033[32m[SUCCES] Nachricht wurde an Webhook versendet\033[0m")
-    except requests.exceptions.HTTPError as err:
-        log(f"      \031[32m[FATAL] Nachricht konnte nicht an Webhook versendet werden: {response.status_code}\033[0m")
-        #log(f"      {err}")
+    except requests.exceptions.HTTPError as e:
+        log(f"      \031[32m[FATAL] Nachricht konnte nicht an Webhook versendet werden: {e.response.status_code}\033[0m")
 
 def uploadToGitHub(datei, zielpfad):
 
-    url = f'https://api.github.com/repos/annhilati/vertretungsplan-stats/contents/{zielpfad}'
+    repo = GitHub.Repository("annhilati/vertretungsplan-stats", GITHUB_TOKEN)
 
-
-    with open(datei, 'rb') as f:
-        content = f.read()
-    content_base64 = base64.b64encode(content).decode('utf-8')
-
-    headers = {
-        'Authorization': f'token {GITHUB_TOKEN}',
-        'Content-Type': 'application/json'
-    }
-    data = {
-        'message': "Vertretungsplan-Scraper-Upload",
-        'content': content_base64
-    }
-    
-    response = requests.put(url, json=data, headers=headers)
-    
-    if response.status_code == 201:
+    try:
+        repo.upload(datei, zielpfad, "Vertretungsplan-Scraper-Upload")
         log(f"\033[32m[SUCCES] Datei \"{zielpfad}\" erfolgreich hochgeladen\033[0m")
-    
-    else:
-        log(f'\033[38;2;255;165;0m[WARN] Datei \"{zielpfad}\" konnte nicht hochgeladen werden: {response.status_code}\033[0m')
-        
-        if response.status_code == 422:
-            log(f"  -> (\033[32mOK\033[0m) Die Datei wurde nicht hochgeladen, da sie bereits mit exakt dem selben Inhalt existiert.")
-        
-        else:
-            log(f"  -> (\033[31m{response.status_code}\033[0m) Versende Benachrichtung an Webhook")
-            postToWebhook(msg=f"""
+    except FileExistsError as e:
+        log(f'\033[38;2;255;165;0m[WARN] Datei \"{zielpfad}\" konnte nicht hochgeladen werden: {e.status_code}\033[0m')
+        log(f"  -> (\033[32mOK\033[0m) Die Datei wurde nicht hochgeladen, da sie bereits mit exakt dem selben Inhalt existiert.")
+    except Exception as e:
+        log(f'\033[38;2;255;165;0m[WARN] Datei \"{zielpfad}\" konnte nicht hochgeladen werden: {e.response.status_code}\033[0m')
+        log(f"  -> (\033[31m??\033[0m) Versende Benachrichtung an Webhook")
+        postToWebhook(msg=f"""
 # Vertretungsplan-Scraper
 ```[WARN] Datei \"{zielpfad}\" konnte nicht hochgeladen werden```
-### excepted response.status_code `{response.status_code}`
+### excepted response.status_code `{e.response.status_code}`
 Beim Fehler handelt es sich nicht um einen `422`. Die zum Upload angefragte Datei existierte also noch nicht
 
 <@720992368110862407>
