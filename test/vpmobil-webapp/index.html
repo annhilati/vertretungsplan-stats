@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VpMobil Webapp</title>
+    <link rel="stylesheet" href="index.css">
+  </head>
+  <body>
+    <script type="text/javascript" src="index.js"></script>
+    <h1>VpMobil Webapp</h1>
+    <h2>Infos zu deinem Stundenplan</h2>
+    <div class="grid-container">
+        <div class="box small">
+            <h4>Fächer geändert:</h4>
+            <p class="bigContTxt" id="txt0">34</p>
+        </div>
+        <div class="box small">
+            <h4>Lehrer geändert:</h4>
+            <p class="bigContTxt" id="txt1">17</p>
+        </div>
+        <div class="box small">
+            <h4>Räume geändert:</h4>
+            <p class="bigContTxt" id="txt2">21</p>
+        </div>
+        <div class="box small">
+            <h4>Lehrer heute krank:</h4>
+            <p class="bigContTxt" id="txt3">4</p>
+        </div>
+        <div class="box small">
+            <h4>Stunden heute ausgefallen:</h4>
+            <p class="bigContTxt" id="txt4">9</p>
+        </div>
+        <div class="box large">
+            <h4>Klassen heute nicht da:</h4>
+            <p class="bigContTxt" id="txt5">-</p>
+        </div>
+        <div class="box small">
+            <h4>Schultags-Score:</h4>
+            <p class="bigContTxt" id="txt6">7.81</p>
+        </div>
+        <div class="box large">
+            <h4>Lehrer heute nicht da:</h4>
+            <p class="bigContTxt" id="txt7">Srz, Mrt, Kly, Std</p>
+        </div>
+    </div>
+    <div id="bottomWrapper">
+        <div class="custom_input">
+            <svg xmlns="http://www.w3.org/2000/svg" class="svg_icon bi-pass" viewBox="0 0 16 16">
+                <path d="M5.5 5a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5Zm0 2a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1h-3Z"></path>
+                <path d="M8 2a2 2 0 0 0 2-2h2.5A1.5 1.5 0 0 1 14 1.5v13a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 14.5v-13A1.5 1.5 0 0 1 3.5 0H6a2 2 0 0 0 2 2Zm0 1a3.001 3.001 0 0 1-2.83-2H3.5a.5.5 0 0 0-.5.5v13a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5v-13a.5.5 0 0 0-.5-.5h-1.67A3.001 3.001 0 0 1 8 3Z"></path>
+            </svg>
+            <input class="input" type="text" placeholder="PAT" id="tokenInp">
+        </div>
+        <button onclick="sendRequest()" class="testbutton">Laden</button>
+        <div class="custom-loader"></div>
+    </div>
+  </body>
+</html>
