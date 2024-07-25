@@ -154,6 +154,7 @@ FC.print(f"[INFO] Warten auf nächsten Scrape-Versuch ...")
 
 # Planungszeiten
 schedule.every().day.at(uhrzeit(datetime.now().replace(hour=8, minute=0))).do(scrape, date = date.today() - timedelta(days=1))
+# Beachtet Time-DIFF
 
 scrape(date(2024, 6, 19)) # Debug-Test pos
 scrape(date(2024, 7, 19)) # Debug-Test frei
