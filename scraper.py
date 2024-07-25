@@ -33,7 +33,7 @@ c = {
 
 def loghead(msg: str):
     FC.printhead(msg=msg, first=False)
-    FC.print("Aktuelle Uhrzeit: {uhrzeit()} am {datum()}")
+    FC.print(f"Aktuelle Uhrzeit: {uhrzeit()} am {datum()}")
     FC.print("")
 
 # ╭──────────────────────────────────────────────────────────────────────────────────────────╮
@@ -94,23 +94,23 @@ def scrape(date = date.today() - timedelta(days=1)):
     dateiname = f"{date.strftime("%Y-%m-%d")} ({wochentag[date.weekday()]}).xml"
     localdir = f"./tmp" 
     
-    zieldateipfad = f"{localdir}/{dateiname}"
+    dateipfad = f"{localdir}/{dateiname}"
 
     try:
         tag = vp.fetch(date)
         FC.print(f"[SUCCES] Daten vom {datum(date)} erfolgreich abgerufen", color="green")
 
         try:
-            tag.saveasfile(pfad=zieldateipfad, overwrite=False)
+            tag.saveasfile(pfad=dateipfad, overwrite=False)
  
             tag.saveasfile(pfad=f"{localdir}/latest.xml", overwrite=True)
 
-            FC.print(f"[SUCCES] Dateien wurden in {uploaddir}/ angelegt", color="green")
+            FC.print(f"[SUCCES] Dateien wurden in {localdir}/ angelegt", color="green")
 
-            uploadToGitHub(datei=zieldateipfad, zielpfad=f"{uploaddir}/{dateiname}")
+            uploadToGitHub(datei=dateipfad, zielpfad=f"{uploaddir}/{dateiname}")
 
         except FileExistsError:
-            FC.print(f"[CONFLICT] Datei mit Pfad \"{zieldateipfad}\" existiert bereits", color="orange")
+            FC.print(f"[CONFLICT] Datei mit Pfad \"{dateipfad}\" existiert bereits", color="orange")
             FC.print(f"  -> Anlegung und Upload neuer Dateien wird übersprungen")
 
     except VpMobil.FetchingError:
@@ -133,15 +133,15 @@ Der Tag war weder Wochenende noch ein als frei markierter Tag
 -# Dieser Fall sollte überprüft werden ・ [Karlo-Hosting](https://karlo-hosting.com/dash/servers)
 """)
 
-                with open(f"{zieldateipfad}.err", "w") as f: pass
-                uploadToGitHub(datei=f"{zieldateipfad}.err", zielpfad=f"{uploaddir}/{dateiname}.ERROR")
+                with open(f"{dateipfad}.err", "w") as f: pass
+                uploadToGitHub(datei=f"{dateipfad}.err", zielpfad=f"{uploaddir}/{dateiname}.ERROR")
             
             elif date in freieTage:
                 FC.print(f"[INFO] Daten vom {datum(date)} wurden nicht abgerufen (als frei markierter Tag)")
                 FC.print(f"  -> Eine Platzhalterdatei wird erstellt und hochgeladen")
 
-                with open(f"{zieldateipfad}.frei", "w") as f: pass
-                uploadToGitHub(datei=f"{zieldateipfad}.frei", zielpfad=f"{uploaddir}/{dateiname}.frei")
+                with open(f"{dateipfad}.frei", "w") as f: pass
+                uploadToGitHub(datei=f"{dateipfad}.frei", zielpfad=f"{uploaddir}/{dateiname}.frei")
         
         elif wochentag[date.weekday()] in ["Sa", "So"]:
             FC.print(f"[INFO] Daten vom {datum(date)} wurden nicht abgerufen (Wochenende)")
