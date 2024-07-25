@@ -24,18 +24,6 @@ def uhrzeit(datetime: datetime = datetime.now()) -> str:
 def datum(datetime: datetime = datetime.now()) -> str:
     return (datetime - timedelta(hours=zeitdiff)).strftime("%d.%m.%Y")
 
-c = {
-    "warn":"\033[38;2;255;165;0m",
-    "error":"\033[31m",
-    "succes":"\033[32m",
-    "reset":"\033[0m"
-    }
-
-def loghead(msg: str):
-    FC.printhead(msg=msg, first=False)
-    FC.print(f"Aktuelle Uhrzeit: {uhrzeit()} am {datum()}")
-    FC.print("")
-
 # ╭──────────────────────────────────────────────────────────────────────────────────────────╮
 # │                                    Initialisierung                                       │ 
 # ╰──────────────────────────────────────────────────────────────────────────────────────────╯
@@ -73,7 +61,7 @@ def uploadToGitHub(datei, zielpfad):
         repo.upload(datei, zielpfad, "Vertretungsplan-Scraper-Upload")
         FC.print(f"[SUCCES] Datei \"{zielpfad}\" erfolgreich hochgeladen", color="green")
     except FileExistsError as e:
-        FC.print(f'[WARN] Datei \"{zielpfad}\" konnte nicht hochgeladen werden: {e.status_code}', color="orange")
+        FC.print(f'[WARN] Datei \"{zielpfad}\" konnte nicht hochgeladen werden', color="orange")
         FC.print(f"  -> (\033[32mOK\033[0m) Die Datei wurde nicht hochgeladen, da sie bereits mit exakt dem selben Inhalt existiert.")
     except Exception as e:
         FC.print(f'\033[38;2;255;165;0m[WARN] Datei \"{zielpfad}\" konnte nicht hochgeladen werden: {e.response.status_code}\033[0m')
@@ -89,7 +77,9 @@ Beim Fehler handelt es sich nicht um einen `422`. Die zum Upload angefragte Date
 
 
 def scrape(date = date.today() - timedelta(days=1)):
-    loghead(f"Scrape-Versuch für den {datum(date)} begonnen")
+    FC.printhead(f"Scrape-Versuch für den {datum(date)} begonnen", first=False)
+    FC.print(f"Aktuelle Uhrzeit: {uhrzeit()} am {datum()}")
+    FC.print("")
 
     dateiname = f"{date.strftime("%Y-%m-%d")} ({wochentag[date.weekday()]}).xml"
     localdir = f"./tmp" 
