@@ -2,9 +2,8 @@ import os
 import schedule
 import time
 import requests
-import base64
 import xml.etree.ElementTree as XML
-from acemeta import Discord, GitHub
+from acemeta import Discord, GitHub, FancyConsole as FC, Time
 from datetime import datetime, date, timedelta
 from dotenv import load_dotenv
 from vpmobil import Vertretungsplan, VpMobil, VpDay
@@ -33,14 +32,9 @@ c = {
     }
 
 def loghead(msg: str):
-    print(f"╔═╩══════════════════════════════════════════════════════════════════")
-    print(f"║ {msg}")
-    print(f"╚═╦══════════════════════════════════════════════════════════════════")
-    print(f"  ║ Aktuelle Uhrzeit: {uhrzeit()} am {datum()}")
-    print(f"  ║ ")
-
-def log(msg: str):
-    print("  ║ " + msg)
+    FC.printhead(msg=msg, first=False)
+    FC.print("Aktuelle Uhrzeit: {uhrzeit()} am {datum()}")
+    FC.print("")
 
 # ╭──────────────────────────────────────────────────────────────────────────────────────────╮
 # │                                    Initialisierung                                       │ 
@@ -53,7 +47,7 @@ WEBHOOK_URL = os.getenv("DC_WEBHOOK_URL")
 GITHUB_TOKEN = os.getenv("GH_TOKEN")
 
 SYSTEM = os.getenv("SYSTEM")
-datenverzeichnis = "data" if SYSTEM == "live" else "test"
+uploaddir = "data" if SYSTEM == "live" else "test"
 
 vp = Vertretungsplan(SCHULNUMMER, BENUTZERNAME, PASSWORT)
 
@@ -67,9 +61,9 @@ def postToWebhook(msg: str):
 
     try:
         webhook.send(msg)
-        log(f"      \033[32m[SUCCES] Nachricht wurde an Webhook versendet\033[0m")
+        FC.print(f"      [SUCCES] Nachricht wurde an Webhook versendet", color="green")
     except requests.exceptions.HTTPError as e:
-        log(f"      \031[32m[FATAL] Nachricht konnte nicht an Webhook versendet werden: {e.response.status_code}\033[0m")
+        FC.print(f"      [FATAL] Nachricht konnte nicht an Webhook versendet werden: {e.response.status_code}", color="red")
 
 def uploadToGitHub(datei, zielpfad):
 
@@ -77,13 +71,13 @@ def uploadToGitHub(datei, zielpfad):
 
     try:
         repo.upload(datei, zielpfad, "Vertretungsplan-Scraper-Upload")
-        log(f"\033[32m[SUCCES] Datei \"{zielpfad}\" erfolgreich hochgeladen\033[0m")
+        FC.print(f"[SUCCES] Datei \"{zielpfad}\" erfolgreich hochgeladen", color="green")
     except FileExistsError as e:
-        log(f'\033[38;2;255;165;0m[WARN] Datei \"{zielpfad}\" konnte nicht hochgeladen werden: {e.status_code}\033[0m')
-        log(f"  -> (\033[32mOK\033[0m) Die Datei wurde nicht hochgeladen, da sie bereits mit exakt dem selben Inhalt existiert.")
+        FC.print(f'[WARN] Datei \"{zielpfad}\" konnte nicht hochgeladen werden: {e.status_code}', color="orange")
+        FC.print(f"  -> (\033[32mOK\033[0m) Die Datei wurde nicht hochgeladen, da sie bereits mit exakt dem selben Inhalt existiert.")
     except Exception as e:
-        log(f'\033[38;2;255;165;0m[WARN] Datei \"{zielpfad}\" konnte nicht hochgeladen werden: {e.response.status_code}\033[0m')
-        log(f"  -> (\033[31m??\033[0m) Versende Benachrichtung an Webhook")
+        FC.print(f'\033[38;2;255;165;0m[WARN] Datei \"{zielpfad}\" konnte nicht hochgeladen werden: {e.response.status_code}\033[0m')
+        FC.print(f"  -> (\033[31m??\033[0m) Versende Benachrichtung an Webhook")
         postToWebhook(msg=f"""
 # Vertretungsplan-Scraper
 ```[WARN] Datei \"{zielpfad}\" konnte nicht hochgeladen werden```
@@ -93,39 +87,40 @@ Beim Fehler handelt es sich nicht um einen `422`. Die zum Upload angefragte Date
 <@720992368110862407>
 -# Dieser Fall sollte überprüft werden ・ [Karlo-Hosting](https://karlo-hosting.com/dash/servers)""")
 
+
 def scrape(date = date.today() - timedelta(days=1)):
     loghead(f"Scrape-Versuch für den {datum(date)} begonnen")
 
     dateiname = f"{date.strftime("%Y-%m-%d")} ({wochentag[date.weekday()]}).xml"
-    datendir = f"./{datenverzeichnis}" 
+    localdir = f"./tmp" 
     
-    zieldateipfad = f"{datendir}/{dateiname}"
+    zieldateipfad = f"{localdir}/{dateiname}"
 
     try:
         tag = vp.fetch(date)
-        log(f"\033[32m[SUCCES] Daten vom {datum(date)} erfolgreich abgerufen\033[0m")
+        FC.print(f"[SUCCES] Daten vom {datum(date)} erfolgreich abgerufen", color="green")
 
         try:
             tag.saveasfile(pfad=zieldateipfad, overwrite=False)
  
-            tag.saveasfile(pfad=f"{datendir}/latest.xml", overwrite=True)
+            tag.saveasfile(pfad=f"{localdir}/latest.xml", overwrite=True)
 
-            log(f"\033[32m[SUCCES] Dateien wurden in {datenverzeichnis}/ angelegt\033[0m")
+            FC.print(f"[SUCCES] Dateien wurden in {uploaddir}/ angelegt", color="green")
 
-            uploadToGitHub(datei=zieldateipfad, zielpfad=f"{datenverzeichnis}/{dateiname}")
+            uploadToGitHub(datei=zieldateipfad, zielpfad=f"{uploaddir}/{dateiname}")
 
         except FileExistsError:
-            log(f"\033[38;2;255;165;0m[CONFLICT] Datei mit Pfad \"{zieldateipfad}\" existiert bereits \033[0m")
-            log(f"  -> Anlegung und Upload neuer Dateien wird übersprungen")
+            FC.print(f"[CONFLICT] Datei mit Pfad \"{zieldateipfad}\" existiert bereits", color="orange")
+            FC.print(f"  -> Anlegung und Upload neuer Dateien wird übersprungen")
 
     except VpMobil.FetchingError:
         if wochentag[date.weekday()] not in ["Sa", "So"]:
             global freieTage
             
             if date not in freieTage:
-                log(f"\033[31m[ERROR] Daten vom {datum(date)} konnten nicht abgerufen werden \033[0m")
-                log(f"  -> Eine Platzhalterdatei wird erstellt und hochgeladen")
-                log(f"  -> Versende Benachrichtung an Webhook")
+                FC.print(f"[ERROR] Daten vom {datum(date)} konnten nicht abgerufen werden", color="red")
+                FC.print(f"  -> Eine Platzhalterdatei wird erstellt und hochgeladen")
+                FC.print(f"  -> Versende Benachrichtung an Webhook")
                 postToWebhook(msg=f"""
 # Vertretungsplan-Scraper
 ```[ERROR] Daten vom {datum(date)} konnten nicht abgerufen werden```
@@ -139,21 +134,21 @@ Der Tag war weder Wochenende noch ein als frei markierter Tag
 """)
 
                 with open(f"{zieldateipfad}.err", "w") as f: pass
-                uploadToGitHub(datei=f"{zieldateipfad}.err", zielpfad=f"{datenverzeichnis}/{dateiname}.ERROR")
+                uploadToGitHub(datei=f"{zieldateipfad}.err", zielpfad=f"{uploaddir}/{dateiname}.ERROR")
             
             elif date in freieTage:
-                log(f"[INFO] Daten vom {datum(date)} wurden nicht abgerufen (als frei markierter Tag)")
-                log(f"  -> Eine Platzhalterdatei wird erstellt und hochgeladen")
+                FC.print(f"[INFO] Daten vom {datum(date)} wurden nicht abgerufen (als frei markierter Tag)")
+                FC.print(f"  -> Eine Platzhalterdatei wird erstellt und hochgeladen")
 
                 with open(f"{zieldateipfad}.frei", "w") as f: pass
-                uploadToGitHub(datei=f"{zieldateipfad}.frei", zielpfad=f"{datenverzeichnis}/{dateiname}.frei")
+                uploadToGitHub(datei=f"{zieldateipfad}.frei", zielpfad=f"{uploaddir}/{dateiname}.frei")
         
         elif wochentag[date.weekday()] in ["Sa", "So"]:
-            log(f"[INFO] Daten vom {datum(date)} wurden nicht abgerufen (Wochenende)")
+            FC.print(f"[INFO] Daten vom {datum(date)} wurden nicht abgerufen (Wochenende)")
 
-    freieTage = VpDay(xmldata=XML.parse(f"{datendir}/latest.xml")).freieTage()
-    log(f"[INFO] Scraping abgeschlossen. Warten auf nächsten Scrape-Versuch ...")
-    log(f"")
+    freieTage = VpDay(xmldata=XML.parse(f"{localdir}/latest.xml")).freieTage()
+    FC.print(f"[INFO] Scraping abgeschlossen. Warten auf nächsten Scrape-Versuch ...")
+    FC.print(f"")
 
 # ╭──────────────────────────────────────────────────────────────────────────────────────────╮
 # │                                     Hauptprogramm                                        │ 
@@ -162,10 +157,10 @@ Der Tag war weder Wochenende noch ein als frei markierter Tag
 print(f"╔════════════════════════════════════════════════════════════════════╗")
 print(f"║ Vertretungsplan-Scraper by Annhilati & Joshi                       ║")
 print(f"╚═╦══════════════════════════════════════════════════════════════════╝")
-if os.path.exists(f"./{datenverzeichnis}/latest.xml"):
-    freieTage = VpDay(xmldata=XML.parse(f"./{datenverzeichnis}/latest.xml")).freieTage()
-    log(f"[INFO] FreieTage erfolgreich aus \"./{datenverzeichnis}/latest.xml\" ausgelesen")
-log(f"[INFO] Warten auf nächsten Scrape-Versuch ...")
+if os.path.exists(f"./tmp/latest.xml"):
+    freieTage = VpDay(xmldata=XML.parse(f"./tmp/latest.xml")).freieTage()
+    FC.print(f"[INFO] FreieTage erfolgreich aus \"./tmp/latest.xml\" ausgelesen")
+FC.print(f"[INFO] Warten auf nächsten Scrape-Versuch ...")
 
 # Planungszeiten
 schedule.every().day.at(uhrzeit(datetime.now().replace(hour=8, minute=0))).do(scrape, date = date.today() - timedelta(days=1))
