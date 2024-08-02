@@ -35,6 +35,7 @@ WEBHOOK_URL = os.getenv("DC_WEBHOOK_URL")
 GITHUB_TOKEN = os.getenv("GH_TOKEN")
 
 SYSTEM = os.getenv("SYSTEM")
+if SYSTEM not in ["dev", "live"]: raise SyntaxError("Systemstatus unklar")
 uploaddir = "data" if SYSTEM == "live" else "test"
 
 vp = Vertretungsplan(SCHULNUMMER, BENUTZERNAME, PASSWORT)
@@ -156,10 +157,24 @@ FC.print(f"[INFO] Warten auf nächsten Scrape-Versuch ...")
 schedule.every().day.at(uhrzeit(datetime.now().replace(hour=8, minute=0))).do(scrape, date = date.today() - timedelta(days=1))
 # Beachtet Time-DIFF
 
-scrape(date(2024, 6, 19)) # Debug-Test pos
-scrape(date(2024, 7, 19)) # Debug-Test frei
-scrape(date(2024, 8, 15)) # Debug-Test Err
+if SYSTEM == "dev":
+    scrape(date(2024, 8, 5)) # Debug-Test pos
+    scrape(date(2024, 7, 19)) # Debug-Test frei
+    scrape(date(2024, 8, 15)) # Debug-Test Err
 
 while True:
-    schedule.run_pending()
+    try:
+        schedule.run_pending()
+    except Exception as e:
+        try:
+            postToWebhook(msg=f"""
+# Vertretungsplan-Scraper
+```{e}```
+Es ist ein Fehler aufgetreten, der absolut unerwartet war!
+Es ist unbedingt nötig, dieses unerwartete Fehlverhalten zu überprüfen, oder es können Datenlöcher entstehen!
+
+<@720992368110862407>
+-# Dieser Fall sollte überprüft werden ・ [Karlo-Hosting](https://karlo-hosting.com/dash/servers)""")
+        except: continue # Falls das Senden des Webhooks fehlschlägt, wird continuet, um das Programm nicht abstürzen zu lassen
+    
     time.sleep(1)
