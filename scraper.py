@@ -151,6 +151,7 @@ print(f"╚═╦═════════════════════
 if os.path.exists(f"./tmp/latest.xml"):
     freieTage = VpMobil.parsefromfile("./tmp/latest.xml").freieTage()
     FC.print(f"[INFO] FreieTage erfolgreich aus \"./tmp/latest.xml\" ausgelesen")
+FC.print(f"[INFO] System-Status: {SYSTEM}")
 FC.print(f"[INFO] Warten auf nächsten Scrape-Versuch ...")
 
 # Planungszeiten
