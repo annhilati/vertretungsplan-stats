@@ -82,7 +82,7 @@ def scrape(date = date.today() - timedelta(days=1)):
     FC.print(f"Aktuelle Uhrzeit: {uhrzeit()} am {datum()}")
     FC.print("")
 
-    dateiname = f"{date.strftime("%Y-%m-%d")} ({wochentag[date.weekday()]}).xml"
+    dateiname = f"{date.strftime('%Y-%m-%d')} ({wochentag[date.weekday()]}).xml"
     localdir = f"./tmp" 
     
     dateipfad = f"{localdir}/{dateiname}"
