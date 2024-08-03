@@ -115,7 +115,6 @@ def scrape(date = date.today() - timedelta(days=1)):
 
     except VpMobil.FetchingError:
         if wochentag[date.weekday()] not in ["Sa", "So"]:
-            global freieTage
             
             if date not in freieTage:
                 FC.print(f"[ERROR] Daten vom {datum(date)} konnten nicht abgerufen werden", color="red")
