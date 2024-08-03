@@ -108,6 +108,11 @@ def scrape(date = date.today() - timedelta(days=1)):
             FC.print(f"[CONFLICT] Datei mit Pfad \"{dateipfad}\" existiert bereits", color="orange")
             FC.print(f"  -> Anlegung und Upload neuer Dateien wird übersprungen")
 
+        global freieTage
+        if os.path.exists(f"./tmp/latest.xml"):
+            freieTage = VpMobil.parsefromfile(f"{localdir}/latest.xml").freieTage()
+        FC.print(f"[INFO] FreieTage aktualisiert")
+
     except VpMobil.FetchingError:
         if wochentag[date.weekday()] not in ["Sa", "So"]:
             global freieTage
@@ -141,9 +146,6 @@ Der Tag war weder Wochenende noch ein als frei markierter Tag
         elif wochentag[date.weekday()] in ["Sa", "So"]:
             FC.print(f"[INFO] Daten vom {datum(date)} wurden nicht abgerufen (Wochenende)")
 
-    if os.path.exists(f"./tmp/latest.xml"):
-        freieTage = VpMobil.parsefromfile(f"{localdir}/latest.xml").freieTage()
-        FC.print(f"[INFO] FreieTage aktualisiert")
     FC.print(f"[INFO] Scraping abgeschlossen. Warten auf nächsten Scrape-Versuch ...")
     FC.print(f"")
 
