@@ -111,7 +111,7 @@ def scrape(date = date.today() - timedelta(days=1)):
         global freieTage
         if os.path.exists(f"./tmp/latest.xml"):
             freieTage = VpMobil.parsefromfile(f"{localdir}/latest.xml").freieTage()
-        FC.print(f"[INFO] FreieTage aktualisiert")
+        FC.print(f"[INFO] FreieTage aus neuer Quelldatei aktualisiert")
 
     except VpMobil.FetchingError:
         if wochentag[date.weekday()] not in ["Sa", "So"]:
