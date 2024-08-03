@@ -137,7 +137,9 @@ Der Tag war weder Wochenende noch ein als frei markierter Tag
         elif wochentag[date.weekday()] in ["Sa", "So"]:
             FC.print(f"[INFO] Daten vom {datum(date)} wurden nicht abgerufen (Wochenende)")
 
-    freieTage = VpMobil.parsefromfile(f"{localdir}/latest.xml").freieTage()
+    if os.path.exists(f"./tmp/latest.xml"):
+        freieTage = VpMobil.parsefromfile(f"{localdir}/latest.xml").freieTage()
+        FC.print(f"[INFO] FreieTage aktualisiert")
     FC.print(f"[INFO] Scraping abgeschlossen. Warten auf nächsten Scrape-Versuch ...")
     FC.print(f"")
 
@@ -148,6 +150,7 @@ Der Tag war weder Wochenende noch ein als frei markierter Tag
 print(f"╔════════════════════════════════════════════════════════════════════╗")
 print(f"║ Vertretungsplan-Scraper by Annhilati & Joshi                       ║")
 print(f"╚═╦══════════════════════════════════════════════════════════════════╝")
+freieTage = []
 if os.path.exists(f"./tmp/latest.xml"):
     freieTage = VpMobil.parsefromfile("./tmp/latest.xml").freieTage()
     FC.print(f"[INFO] FreieTage erfolgreich aus \"./tmp/latest.xml\" ausgelesen")
@@ -155,7 +158,7 @@ FC.print(f"[INFO] System-Status: {SYSTEM}")
 FC.print(f"[INFO] Warten auf nächsten Scrape-Versuch ...")
 
 # Planungszeiten
-schedule.every().day.at(uhrzeit(datetime.now().replace(hour=10, minute=23))).do(scrape, date = date.today() - timedelta(days=1))
+schedule.every().day.at(uhrzeit(datetime.now().replace(hour=10, minute=32))).do(scrape, date = date.today() - timedelta(days=1))
 # Beachtet Time-DIFF
 
 if SYSTEM == "dev":
@@ -164,20 +167,25 @@ if SYSTEM == "dev":
     scrape(date(2024, 8, 15)) # Debug-Test Err
 
 while True:
+    break
     try:
         schedule.run_pending()
     except Exception as e:
         try:
-#             postToWebhook(msg=f"""
-# # Vertretungsplan-Scraper
-# ```{e}```
-# Es ist ein Fehler aufgetreten, der absolut unerwartet war!
-# Es ist unbedingt nötig, dieses unerwartete Fehlverhalten zu überprüfen, oder es können Datenlöcher entstehen!
+            postToWebhook(msg=f"""
+# Vertretungsplan-Scraper
+```{e}```
+Es ist ein Fehler aufgetreten, der absolut unerwartet war!
+Es ist unbedingt nötig, dieses unerwartete Fehlverhalten zu überprüfen, oder es können Datenlöcher entstehen!
 
-# <@720992368110862407>
-# -# Dieser Fall sollte überprüft werden ・ [Karlo-Hosting](https://karlo-hosting.com/dash/servers)""")
+<@720992368110862407>
+-# Dieser Fall sollte überprüft werden ・ [Karlo-Hosting](https://karlo-hosting.com/dash/servers)""")
         
             ...
         except: continue # Falls das Senden des Webhooks fehlschlägt, wird continuet, um das Programm nicht abstürzen zu lassen
     
+    time.sleep(10)
+
+while True:
+    schedule.run_pending()
     time.sleep(10)
