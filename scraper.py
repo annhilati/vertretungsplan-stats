@@ -155,7 +155,7 @@ FC.print(f"[INFO] System-Status: {SYSTEM}")
 FC.print(f"[INFO] Warten auf nächsten Scrape-Versuch ...")
 
 # Planungszeiten
-schedule.every().day.at(uhrzeit(datetime.now().replace(hour=8, minute=0))).do(scrape, date = date.today() - timedelta(days=1))
+schedule.every().day.at(uhrzeit(datetime.now().replace(hour=10, minute=23))).do(scrape, date = date.today() - timedelta(days=1))
 # Beachtet Time-DIFF
 
 if SYSTEM == "dev":
@@ -168,14 +168,16 @@ while True:
         schedule.run_pending()
     except Exception as e:
         try:
-            postToWebhook(msg=f"""
-# Vertretungsplan-Scraper
-```{e}```
-Es ist ein Fehler aufgetreten, der absolut unerwartet war!
-Es ist unbedingt nötig, dieses unerwartete Fehlverhalten zu überprüfen, oder es können Datenlöcher entstehen!
+#             postToWebhook(msg=f"""
+# # Vertretungsplan-Scraper
+# ```{e}```
+# Es ist ein Fehler aufgetreten, der absolut unerwartet war!
+# Es ist unbedingt nötig, dieses unerwartete Fehlverhalten zu überprüfen, oder es können Datenlöcher entstehen!
 
-<@720992368110862407>
--# Dieser Fall sollte überprüft werden ・ [Karlo-Hosting](https://karlo-hosting.com/dash/servers)""")
+# <@720992368110862407>
+# -# Dieser Fall sollte überprüft werden ・ [Karlo-Hosting](https://karlo-hosting.com/dash/servers)""")
+        
+            ...
         except: continue # Falls das Senden des Webhooks fehlschlägt, wird continuet, um das Programm nicht abstürzen zu lassen
     
-    time.sleep(1)
+    time.sleep(10)
