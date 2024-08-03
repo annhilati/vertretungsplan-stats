@@ -18,11 +18,15 @@ zeitdiff = int(os.getenv("TIME_DIFF"))
 
 wochentag = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
 
+
+
 def uhrzeit(datetime: datetime = datetime.now()) -> str:
-    return (datetime - timedelta(hours=zeitdiff)).strftime("%H:%M")
+    return Time.clock(datetime - timedelta(hours=zeitdiff))
+    #return (datetime - timedelta(hours=zeitdiff)).strftime("%H:%M")
 
 def datum(datetime: datetime = datetime.now()) -> str:
-    return (datetime - timedelta(hours=zeitdiff)).strftime("%d.%m.%Y")
+    return Time.date(datetime - timedelta(hours=zeitdiff))
+    #return (datetime - timedelta(hours=zeitdiff)).strftime("%d.%m.%Y")
 
 # ╭──────────────────────────────────────────────────────────────────────────────────────────╮
 # │                                    Initialisierung                                       │ 
