@@ -158,7 +158,7 @@ FC.print(f"[INFO] System-Status: {SYSTEM}")
 FC.print(f"[INFO] Warten auf nächsten Scrape-Versuch ...")
 
 # Planungszeiten
-schedule.every().day.at(uhrzeit(datetime.now().replace(hour=10, minute=32))).do(scrape, date = date.today() - timedelta(days=1))
+schedule.every().day.at(uhrzeit(datetime.now().replace(hour=7, minute=0))).do(scrape, date = date.today() - timedelta(days=1))
 # Beachtet Time-DIFF
 
 if SYSTEM == "dev":
@@ -167,7 +167,7 @@ if SYSTEM == "dev":
     scrape(date(2024, 8, 15)) # Debug-Test Err
 
 while True:
-    break
+    #break
     try:
         schedule.run_pending()
     except Exception as e:
