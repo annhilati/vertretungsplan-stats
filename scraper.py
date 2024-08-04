@@ -41,6 +41,7 @@ GITHUB_TOKEN = os.getenv("GH_TOKEN")
 SYSTEM = os.getenv("SYSTEM")
 if SYSTEM not in ["dev", "live"]: raise SyntaxError("Systemstatus unklar")
 uploaddir = "data" if SYSTEM == "live" else "test"
+localdir = f"./tmp" 
 
 vp = Vertretungsplan(SCHULNUMMER, BENUTZERNAME, PASSWORT)
 
@@ -87,7 +88,6 @@ def scrape(date = date.today() - timedelta(days=1)):
     FC.print("")
 
     dateiname = f"{date.strftime('%Y-%m-%d')} ({wochentag[date.weekday()]}).xml"
-    localdir = f"./tmp" 
     
     dateipfad = f"{localdir}/{dateiname}"
 
@@ -109,7 +109,7 @@ def scrape(date = date.today() - timedelta(days=1)):
             FC.print(f"  -> Anlegung und Upload neuer Dateien wird übersprungen")
 
         global freieTage
-        if os.path.exists(f"./tmp/latest.xml"):
+        if os.path.exists(f"{localdir}/latest.xml"):
             freieTage = VpMobil.parsefromfile(f"{localdir}/latest.xml").freieTage()
         FC.print(f"[INFO] FreieTage aus neuer Quelldatei aktualisiert")
 
@@ -156,14 +156,14 @@ print(f"╔═══════════════════════
 print(f"║ Vertretungsplan-Scraper by Annhilati & Joshi                       ║")
 print(f"╚═╦══════════════════════════════════════════════════════════════════╝")
 freieTage = []
-if os.path.exists(f"./tmp/latest.xml"):
-    freieTage = VpMobil.parsefromfile("./tmp/latest.xml").freieTage()
-    FC.print(f"[INFO] FreieTage erfolgreich aus \"./tmp/latest.xml\" ausgelesen")
+if os.path.exists(f"{localdir}/latest.xml"):
+    freieTage = VpMobil.parsefromfile(f"{localdir}/latest.xml").freieTage()
+    FC.print(f"[INFO] FreieTage erfolgreich aus \"{localdir}/latest.xml\" ausgelesen")
 FC.print(f"[INFO] System-Status: {SYSTEM}")
 FC.print(f"[INFO] Warten auf nächsten Scrape-Versuch ...")
 
 # Planungszeiten
-schedule.every().day.at(uhrzeit(datetime.now().replace(hour=7, minute=0))).do(scrape, date = date.today() - timedelta(days=1))
+schedule.every().day.at(uhrzeit(datetime.now().replace(hour=9, minute=5))).do(scrape, date = date.today() - timedelta(days=1))
 # Beachtet Time-DIFF
 
 if SYSTEM == "dev":
