@@ -163,7 +163,7 @@ FC.print(f"[INFO] System-Status: {SYSTEM}")
 FC.print(f"[INFO] Warten auf nächsten Scrape-Versuch ...")
 
 # Planungszeiten
-schedule.every().day.at(uhrzeit(datetime.now().replace(hour=9, minute=5))).do(scrape)
+schedule.every().day.at(uhrzeit(datetime.now().replace(hour=7, minute=15))).do(scrape)
 # Beachtet Time-DIFF
 
 if SYSTEM == "dev":
