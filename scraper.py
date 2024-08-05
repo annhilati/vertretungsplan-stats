@@ -21,12 +21,12 @@ wochentag = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
 
 
 def uhrzeit(datetime: datetime = datetime.now()) -> str:
-    return Time.clock(datetime - timedelta(hours=zeitdiff))
-    #return (datetime - timedelta(hours=zeitdiff)).strftime("%H:%M")
+    #return Time.clock(datetime - timedelta(hours=zeitdiff))
+    return (datetime - timedelta(hours=zeitdiff)).strftime("%H:%M")
 
 def datum(datetime: datetime = datetime.now()) -> str:
-    return Time.date(datetime - timedelta(hours=zeitdiff))
-    #return (datetime - timedelta(hours=zeitdiff)).strftime("%d.%m.%Y")
+    #return Time.date(datetime - timedelta(hours=zeitdiff))
+    return (datetime - timedelta(hours=zeitdiff)).strftime("%d.%m.%Y")
 
 # ╭──────────────────────────────────────────────────────────────────────────────────────────╮
 # │                                    Initialisierung                                       │ 
@@ -163,7 +163,7 @@ FC.print(f"[INFO] System-Status: {SYSTEM}")
 FC.print(f"[INFO] Warten auf nächsten Scrape-Versuch ...")
 
 # Planungszeiten
-schedule.every().day.at(uhrzeit(datetime.now().replace(hour=9, minute=5))).do(scrape, date = date.today() - timedelta(days=1))
+schedule.every().day.at(uhrzeit(datetime.now().replace(hour=9, minute=5))).do(scrape)
 # Beachtet Time-DIFF
 
 if SYSTEM == "dev":
