@@ -2,19 +2,22 @@ import os
 import schedule
 import time
 import requests
+import yaml
 import xml.etree.ElementTree as XML
 from acemeta import Discord, GitHub, FancyConsole as FC, Time
 from datetime import datetime, date, timedelta
 from dotenv import load_dotenv
-from vpmobil import Vertretungsplan, VpMobil, VpDay
+from vpmobil import Vertretungsplan, VpMobil
 
 load_dotenv()
+with open(".env.yaml") as file:
+    config = yaml.safe_load(file)
 
 # ╭──────────────────────────────────────────────────────────────────────────────────────────╮
 # │                                      Bibliothek                                          │ 
 # ╰──────────────────────────────────────────────────────────────────────────────────────────╯
 
-zeitdiff = int(os.getenv("TIME_DIFF"))
+zeitdiff: int = config["schedule"]["shift"]
 
 wochentag = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
 
@@ -38,7 +41,7 @@ PASSWORT = os.getenv('VP_PASSWORT')
 WEBHOOK_URL = os.getenv("DC_WEBHOOK_URL")
 GITHUB_TOKEN = os.getenv("GH_TOKEN")
 
-SYSTEM = os.getenv("SYSTEM")
+SYSTEM = config["system"]
 if SYSTEM not in ["dev", "live"]: raise SyntaxError("Systemstatus unklar")
 uploaddir = "data" if SYSTEM == "live" else "test"
 localdir = f"./tmp" 
@@ -145,12 +148,17 @@ Der Tag war weder Wochenende noch ein als frei markierter Tag
         elif wochentag[date.weekday()] in ["Sa", "So"]:
             FC.print(f"[INFO] Daten vom {datum(date)} wurden nicht abgerufen (Wochenende)")
 
-    FC.print(f"[INFO] Scraping abgeschlossen. Warten auf nächsten Scrape-Versuch ...")
+    FC.print(f"[INFO] Scraping abgeschlossen. Warten auf nächsten Scrape-Versuch ({schedule.next_run()})")
     FC.print(f"")
 
 # ╭──────────────────────────────────────────────────────────────────────────────────────────╮
 # │                                     Hauptprogramm                                        │ 
 # ╰──────────────────────────────────────────────────────────────────────────────────────────╯
+# Planungszeiten
+h = config["schedule"]["hour"] - zeitdiff
+m = config["schedule"]["minute"] - zeitdiff
+schedule.every().day.at(uhrzeit(datetime.now().replace(hour=h, minute=m))).do(scrape)
+
 
 print(f"╔════════════════════════════════════════════════════════════════════╗")
 print(f"║ Vertretungsplan-Scraper by Annhilati & Joshi                       ║")
@@ -159,12 +167,10 @@ freieTage = []
 if os.path.exists(f"{localdir}/latest.xml"):
     freieTage = VpMobil.parsefromfile(f"{localdir}/latest.xml").freieTage()
     FC.print(f"[INFO] FreieTage erfolgreich aus \"{localdir}/latest.xml\" ausgelesen")
+FC.print(f"[INFO] Aktuelle Zeit: {datum()}:{uhrzeit()} (UTC+{zeitdiff})")
 FC.print(f"[INFO] System-Status: {SYSTEM}")
-FC.print(f"[INFO] Warten auf nächsten Scrape-Versuch ...")
+FC.print(f"[INFO] Warten auf nächsten Scrape-Versuch ({schedule.next_run()})")
 
-# Planungszeiten
-schedule.every().day.at(uhrzeit(datetime.now().replace(hour=7, minute=15))).do(scrape)
-# Beachtet Time-DIFF
 
 if SYSTEM == "dev":
     scrape(date(2024, 8, 5)) # Debug-Test pos
