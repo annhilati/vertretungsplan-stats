@@ -156,7 +156,7 @@ Der Tag war weder Wochenende noch ein als frei markierter Tag
 # ╰──────────────────────────────────────────────────────────────────────────────────────────╯
 # Planungszeiten
 h = config["schedule"]["hour"] - zeitdiff
-m = config["schedule"]["minute"] - zeitdiff
+m = config["schedule"]["minute"]
 schedule.every().day.at(uhrzeit(datetime.now().replace(hour=h, minute=m))).do(scrape)
 
 
