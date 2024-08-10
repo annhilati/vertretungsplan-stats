@@ -21,11 +21,11 @@ zeitdiff: int = config["schedule"]["shift"]
 
 wochentag = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
 
-def uhrzeit(datetime: datetime = datetime.now()) -> str:
-    return (datetime - timedelta(hours=zeitdiff)).strftime("%H:%M")
+def uhrzeit(dt) -> str:
+    return (dt - timedelta(hours=zeitdiff)).strftime("%H:%M")
 
-def datum(datetime: datetime = datetime.now()) -> str:
-    return (datetime - timedelta(hours=zeitdiff)).strftime("%d.%m.%Y")
+def datum(dt) -> str:
+    return (dt - timedelta(hours=zeitdiff)).strftime("%d.%m.%Y")
 
 # ╭──────────────────────────────────────────────────────────────────────────────────────────╮
 # │                                    Initialisierung                                       │ 
@@ -80,8 +80,8 @@ def scrape(scrape_date = None):
     if scrape_date is None:
         scrape_date = date.today() - timedelta(days=1)
         
-    current_time = uhrzeit()
-    current_date = datum()
+    current_time = uhrzeit(datetime.now())
+    current_date = datum(datetime.now())
     scrape_date_str = datum(scrape_date)
 
     FC.printhead(f"Scrape-Versuch für den {scrape_date_str} begonnen", first=False)
@@ -155,7 +155,7 @@ freieTage = []
 if os.path.exists(f"{localdir}/latest.xml"):
     freieTage = VpMobil.parsefromfile(f"{localdir}/latest.xml").freieTage()
     FC.print(f"[INFO] FreieTage erfolgreich aus \"{localdir}/latest.xml\" ausgelesen")
-FC.print(f"[INFO] Aktuelle Zeit: {datum()}:{uhrzeit()} (UTC+{zeitdiff})")
+FC.print(f"[INFO] Aktuelle Zeit: {datum(datetime.now())}:{uhrzeit(datetime.now())} (UTC+{zeitdiff})")
 FC.print(f"[INFO] System-Status: {SYSTEM}")
 FC.print(f"[INFO] Warten auf nächsten Scrape-Versuch ({schedule.next_run()})")
 
