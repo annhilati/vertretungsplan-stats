@@ -6,7 +6,7 @@ vp = Vertretungsplan(schulnummer=10126582,
                      passwort="s361o97")
 
 daten: list[VpDay] = []
-for tag in range(20241106, 20241122):
+for tag in range(20241112, 20241122):
     fetch = vp.fetch(datei=f"10126582/mobil/mobdaten/PlanKl{tag}.xml")
     daten.append(fetch)
 
